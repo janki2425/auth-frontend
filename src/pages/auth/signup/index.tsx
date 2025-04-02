@@ -1,9 +1,7 @@
-import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { registerUser } from "@/pages/api/auth";
-
-
+import Link from "next/link";
 
 export default function signup(){
     const [form , setForm] = useState({first_name:"",last_name:"",email:"",password:""});
@@ -31,7 +29,7 @@ export default function signup(){
 
 
     return(
-        <div className="flex items-center justify-center min-h-screen w-full bg-slate-200">
+        <div className="flex items-center justify-center min-h-screen w-full bg-slate-100">
             <form onSubmit={handleSubmit} className="flex flex-col mb-4 bg-white w-1/2 py-8 items-center rounded-[5px] shadow-2xl">
                 <h2 className="text-[30px] text-slate-700 font-semibold mb-4">SIGN UP</h2>
                 {error && <p className="text-red-600">{error}</p>}
@@ -60,10 +58,13 @@ export default function signup(){
                 type="password"
                 placeholder="Password"
                 value={form.password} 
-                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
+                className="border-[1px] border-slate-300 p-2 mb-6 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
                 <button className="py-2 px-4 rounded-[10px] text-white bg-slate-700 hover:bg-slate-600">Sign Up</button>
+                <Link href={"/auth/login"} className="mt-3">
+                <p className="text-[11px]">Already have an account ?<span className="text-[12px] text-blue-600 border-b-[1px] ml-2">Sign In</span></p>
+                </Link>
             </form>
         </div>
     );

@@ -1,9 +1,9 @@
-import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { loginUser } from "@/pages/api/auth";
+import Link from "next/link";
 
-export default function signin(){
+export default function login(){
     const [form , setForm] = useState({email:"",password:""});
     const [error , setError] = useState("");
     const route = useRouter();
@@ -29,7 +29,7 @@ export default function signin(){
     }
 
     return(
-        <div className="flex items-center justify-center min-h-screen w-full bg-slate-200">
+        <div className="flex items-center justify-center min-h-screen w-full bg-slate-100">
             <form onSubmit={handleSubmit} className="flex flex-col mb-4 bg-white w-1/2 py-8 items-center rounded-[5px] shadow-2xl">
                 <h2 className="text-[30px] text-slate-700 font-semibold mb-4">Login</h2>
                 {error && <p className="text-red-600">{error}</p>}
@@ -48,6 +48,9 @@ export default function signin(){
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
                 <button className="py-2 px-4 rounded-[10px] text-white bg-slate-700 hover:bg-slate-600">Login</button>
+                <Link href={"/auth/signup"} className="mt-3">
+                <p className="text-[11px]">Don't have an account ?<span className="text-[12px] text-blue-600 border-b-[1px] ml-2">Sign Up</span></p>
+                </Link> 
             </form>
         </div>
     );
