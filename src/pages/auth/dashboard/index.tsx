@@ -54,15 +54,15 @@ export default function dashboard(){
 
     return(
         <div className="flex flex-col items-center justify-center min-h-screen w-full bg-slate-100">
-            <h1 className="text-[40px] text-slate-700 font-semibold mb-5">Dashboard</h1>
-            <p className="text-[20px] text-slate-700 mb-3">Welcome, {user.first_name}</p>
+            <h1 className="text-[40px] lg:text-[50px] xl:text-[60px] 2xl:text-[100px] text-slate-700 font-semibold mb-5">Dashboard</h1>
+            <p className="text-[20px] lg:text-[30px] xl:text-[35px] 2xl:text-[60px] text-slate-700 mb-3">Welcome, {user.first_name}</p>
 
             <button 
             onClick={()=>{
                 localStorage.removeItem("token");
                 route.push("/auth/login")
             }}
-            className="py-2 px-4 rounded-[10px] text-white bg-red-600 hover:bg-red-700">Logout</button>
+            className="py-2 px-4 xl:py-3 xl:px-5 2xl:py-4 2xl:px-7 rounded-[10px] text-white text-[15px] lg:text-[20px] xl:text-[25px] 2xl:text-[40px] bg-red-600 hover:bg-red-700">Logout</button>
         </div>
     );
 }
