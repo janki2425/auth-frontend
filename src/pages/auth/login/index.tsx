@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { loginUser } from "@/pages/api/auth";
 
 export default function signin(){
     const [form , setForm] = useState({email:"",password:""});
@@ -13,9 +14,14 @@ export default function signin(){
         
 
         try{
-            const res = await axios.post("http://localhost:3000/api/login");
-            localStorage.setItem("token" , res.data.token)
-            route.push("/dashboard");
+            const response = await loginUser(form);
+
+            if (response.token) {
+                localStorage.setItem("token", response.token);
+                route.push("/auth/dashboard");
+            } else {
+                setError(response.error || "Invalid credentials");
+                }
         }
         catch(error){
             setError("Invalid User")
@@ -23,25 +29,25 @@ export default function signin(){
     }
 
     return(
-        <div className="flex items-center justify-center min-h-screen">
-            <form onSubmit={handleSubmit} className="space-y-2">
-                <h2 className="text-xl font-semibold mb-4">Login</h2>
+        <div className="flex items-center justify-center min-h-screen w-full bg-slate-200">
+            <form onSubmit={handleSubmit} className="flex flex-col mb-4 bg-white w-1/2 py-8 items-center rounded-[5px] shadow-2xl">
+                <h2 className="text-[30px] text-slate-700 font-semibold mb-4">Login</h2>
                 {error && <p className="text-red-600">{error}</p>}
                 <input 
                 type="email"
                 placeholder="Email"
                 value={form.email} 
-                className="border-none p-2"
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , email:e.target.value})}
                 />
                 <input 
                 type="password"
                 placeholder="Password"
                 value={form.password} 
-                className="border-none p-2"
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
-                <button className="py-2 px-4 rounded">Login</button>
+                <button className="py-2 px-4 rounded-[10px] text-white bg-slate-700 hover:bg-slate-600">Login</button>
             </form>
         </div>
     );

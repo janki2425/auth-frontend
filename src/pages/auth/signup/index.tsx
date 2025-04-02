@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
+import { registerUser } from "@/pages/api/auth";
+
 
 
 export default function signup(){
@@ -13,8 +15,14 @@ export default function signup(){
         setError("");
 
         try{
-            await axios.post("http://localhost:3000/api/register",form);
-            route.push("/api/login");
+            const response = await registerUser(form);
+
+            if (response.error) {
+                setError(response.error);
+            } else {
+            console.log("Signup successful:", response);
+            route.push("/auth/login");
+            }
         }
         catch(error){
             setError("Signup failed. Try again.");
@@ -23,39 +31,39 @@ export default function signup(){
 
 
     return(
-        <div className="flex items-center justify-center min-h-screen">
-            <form onSubmit={handleSubmit} className="space-y-2">
-                <h2 className="text-xl font-semibold mb-4">SIGN UP</h2>
+        <div className="flex items-center justify-center min-h-screen w-full bg-slate-200">
+            <form onSubmit={handleSubmit} className="flex flex-col mb-4 bg-white w-1/2 py-8 items-center rounded-[5px] shadow-2xl">
+                <h2 className="text-[30px] text-slate-700 font-semibold mb-4">SIGN UP</h2>
                 {error && <p className="text-red-600">{error}</p>}
                 <input 
                 type="text"
                 placeholder="FirstName"
                 value={form.first_name}
-                className="border-none p-2" 
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , first_name:e.target.value})}
                 />
                 <input 
                 type="text"
                 placeholder="LastName"
                 value={form.last_name} 
-                className="border-none p-2"
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , last_name:e.target.value})}
                 />
                 <input 
                 type="email"
                 placeholder="Email"
                 value={form.email} 
-                className="border-none p-2"
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , email:e.target.value})}
                 />
                 <input 
                 type="password"
                 placeholder="Password"
                 value={form.password} 
-                className="border-none p-2"
+                className="border-[1px] border-slate-300 p-2 mb-4 w-1/2 rounded-[10px]"
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
-                <button className="py-2 px-4 rounded">Sign Up</button>
+                <button className="py-2 px-4 rounded-[10px] text-white bg-slate-700 hover:bg-slate-600">Sign Up</button>
             </form>
         </div>
     );
