@@ -32,33 +32,37 @@ export default function login(){
     }
 
     return(
-        <div className="flex items-center justify-center min-h-screen lg:h-dvh w-full bg-black opacity-95">
-            <form onSubmit={handleSubmit} className="flex flex-col mb-4 bg-black opacity-100 w-1/3 px-10 h-fit py-6 justify-center rounded-[40px] border-[0.1px] border-gray-400 shadow-2xl">
-                <h2 className="text-[10px] xl:text-[40px] 2xl:text-[80px] text-slate-100 font-semibold">Login</h2>
-                <p className="w-2/3 mb-4 opacity-60">Enter your email below to login to your account</p>
+        <div className="flex items-center justify-center min-h-screen lg:h-dvh w-full bg-black">
+            <form onSubmit={handleSubmit} className="flex flex-col bg-black w-[382px] px-6 h-fit py-6 justify-center rounded-[10px] outline-[0.5px]">
+                <h2 className="text-[24px] mb-1 text-slate-100 font-semibold">Login</h2>
+                <p className="mb-4 opacity-60 text-[14px]">Enter your email below to login to your account</p>
                 {error && <p className="text-red-600">{error}</p>}
-                <label htmlFor="email">Email</label>
+                <label htmlFor="email" className="text-[14px]">Email</label>
                 <input 
                 id="email"
                 name="email"
                 type="email"
                 placeholder="E@example.com"
                 value={form.email} 
-                className="border-[1px] border-slate-300 p-3 mb-4 mt-2 2xl:mb-8 w-full text-[14px] rounded-[10px]"
+                className="outline-[0.5px] px-3 py-1.5 mb-6 mt-1 2xl:mb-8 w-full bg-black text-[16px] rounded-[5px]"
                 onChange={(e)=>setForm({...form , email:e.target.value})}
                 />
-                <label htmlFor="password">Password</label>
+                <div className="flex justify-between">
+                    <label htmlFor="password" className="text-[14px]">Password</label>
+                    <p className="text-[14px]">Forgot your password?</p>
+                </div>
                 <input 
                 id="password"
                 name="paaword"
                 type="password"
                 value={form.password} 
-                className="border-[1px] border-slate-300 p-3 mt-2 mb-4 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[14px] rounded-[10px]"
+                className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]"
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
-                <button className="py-1.5 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[18px] font-[500] tracking-[0.5px] rounded-[10px] text-black bg-slate-200 hover:bg-slate-600">Login</button>
+                <button className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600">Login</button>
+                <button className="outline-[0.5px] mt-7 py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-white bg-transparent">Login with Google</button>
                 <Link href={"/auth/signup"} className="mt-3 mx-auto">
-                <p className="text-[8px] lg:text-[11px] xl:text-[14px] 2xl:text-[24px]">Don't have an account ?<span className="text-[9px] lg:text-[12px] xl:text-[16px] 2xl:text-[28px] text-blue-600 border-b-[1px] border-blue-600 ml-2">Sign Up</span></p>
+                <p className="text-[14px]">Don't have an account ?<span className="text-[14px] border-b-[1px] ml-1 pb-[1px]">Sign up</span></p>
                 </Link> 
             </form>
         </div>
