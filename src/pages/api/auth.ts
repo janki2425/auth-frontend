@@ -1,4 +1,4 @@
-export const BACKEND_URL = "http://localhost:5000";
+export const BACKEND_URL = "https://cb98-122-182-203-103.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;

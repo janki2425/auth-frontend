@@ -37,7 +37,11 @@ export default function dashboard(){
                     },
                 })
                 
-                setUser(response.data.user || response.data);
+                if (response.data.user) {
+                    setUser(response.data.user);
+                } else {
+                    setUser(response.data);
+                }
             }catch (err) {
                 setError("Failed to fetch user details.");
                 console.error("Error fetching user details:", err);
@@ -48,9 +52,12 @@ export default function dashboard(){
         fetchUserDetails();
     },[route])
 
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
     if (!user) return <p>No user data available.</p>;
+    console.log("username : ",user.first_name);
+    
 
     return(
         <div className="flex flex-col items-center justify-center min-h-screen w-full bg-slate-100">
