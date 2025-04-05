@@ -1,4 +1,4 @@
-export const BACKEND_URL = "https://d212-122-182-203-103.ngrok-free.app";
+export const BACKEND_URL = "https://f5b5-2401-4900-195c-7523-bcda-f114-ee80-8184.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;
@@ -17,6 +17,7 @@ interface AuthResponse {
   token?: string;
   error?: string;
 }
+
 
 export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   try {
@@ -54,52 +55,32 @@ export const registerUser = async (userData: RegisterData): Promise<AuthResponse
   }
 };
 
-export const forgetPassword = async (email:string): Promise<AuthResponse> =>{
-  try{
-    const response = await fetch(`${BACKEND_URL}/api/forget-Password`,{
-      method:"POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({email}),
-    })
-    if (!response.ok) {
-      throw new Error("Email not Exist!");
-    }
-    return await response.json();
-  }catch (error) {
-    return { message: "Error verifing Email", error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
 
-export const resetPassword = async (email: string,code:string): Promise<AuthResponse> =>{
-  try{
-    const response = await fetch(`${BACKEND_URL}/api/reset-password`,{
-      method:"POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({email,code}),
-    })
-    if (!response.ok) {
-      throw new Error("OTP not matched!");
-    }
-    return await response.json();
-  }catch (error) {
-    return { message: "Error verifing OTP", error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
+export const forgetPassword = async ({ email }: { email: string }) => {
+  const res = await fetch(`${BACKEND_URL}/api/forget-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return await res.json();
+};
 
-export const completePasswordReset = async (email: string, code: string, password: string): Promise<AuthResponse> => {
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/reset-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code, password }),
-    });
-    
-    if (!response.ok) {
-      throw new Error("Password reset failed");
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return { message: "Error resetting password", error: error instanceof Error ? error.message : "Unknown error" };
-  }
+
+export const resetPassword = async (data: {
+  email: string;
+  code: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  const res = await fetch(`${BACKEND_URL}/api/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: data.email,
+      otp: data.code,
+      newPassword: data.password,
+      confirmPassword: data.confirmPassword,
+    }),
+  });
+  return await res.json();
 };
