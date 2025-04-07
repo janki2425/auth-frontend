@@ -49,7 +49,7 @@ export default function login(){
                 />
                 <div className="flex justify-between">
                     <label htmlFor="password" className="text-[14px]">Password</label>
-                    <Link href={"/auth/reset"}>
+                    <Link href={"/auth/reset-password"}>
                         <p className="text-[14px]">Forgot your password?</p>
                     </Link>
                 </div>

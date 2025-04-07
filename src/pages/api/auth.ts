@@ -1,4 +1,4 @@
-export const BACKEND_URL = "https://badc-122-170-151-81.ngrok-free.app";
+export const BACKEND_URL = "https://8ea4-122-170-151-81.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;
@@ -72,12 +72,11 @@ export const resetPassword = async (data: {
   password: string;
   confirmPassword: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/reset-password`, {
+  const res = await fetch(`${BACKEND_URL}/api/reset-password?reset_password_otp=${data.code}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email: data.email,
-      otp: data.code,
       newPassword: data.password,
       confirmPassword: data.confirmPassword,
     }),

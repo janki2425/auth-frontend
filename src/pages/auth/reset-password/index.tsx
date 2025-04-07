@@ -40,6 +40,7 @@ export default function ResetPassword() {
 
   const handleResetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // const req=router.push();
     if (form.password.trim() !== form.confirmPassword.trim()) {
       toast.error("Passwords do not match");
       return;
