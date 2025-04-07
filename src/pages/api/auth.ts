@@ -1,4 +1,4 @@
-export const BACKEND_URL = "https://8ea4-122-170-151-81.ngrok-free.app";
+export const BACKEND_URL = "https://91af-122-170-151-81.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;
@@ -83,3 +83,39 @@ export const resetPassword = async (data: {
   });
   return await res.json();
 };
+
+export const updateAccount = async({
+  userId,
+  data
+}:{
+  userId: string,
+  data: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    password?: string;
+    updated_by?: string;
+  }
+})=>{
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/update/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { success: false, message: errorData.message || "Update failed" };
+    }
+    
+    const responseData = await res.json();
+    return { success: true, message: responseData.message, user: res.ok ? data : null };
+  }catch (error) {
+    console.error("Update account error:", error);
+    return { success: false, message: "Network error occurred" };
+  }
+}

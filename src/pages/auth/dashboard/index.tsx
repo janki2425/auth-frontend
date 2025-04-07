@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "react-toastify";
 import { BACKEND_URL } from "@/pages/api/auth";
+import { updateAccount } from "@/pages/api/auth";
 
 
 
@@ -36,9 +37,11 @@ interface SidebarContentProps {
 }
 
 interface UserType {
+  id: string;
   first_name: string;
   last_name: string;
   email?: string;
+  password:string;
 }
 
 const Dashboard: React.FC = () => {
@@ -50,6 +53,21 @@ const Dashboard: React.FC = () => {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+
+  useEffect(() => {
+    const { token } = router.query;
+
+    if (token && typeof token === "string") {
+      localStorage.setItem("token", token);
+      // Clean up URL (remove token query param)
+      router.replace("/auth/dashboard");
+    }
+  }, [router]);
+  
 
   const toggleTheme = (): void => {
     const newTheme: ThemeType = theme === "light" ? "dark" : "light";
@@ -76,6 +94,57 @@ const Dashboard: React.FC = () => {
     router.push("/auth/login");
   };
 
+  
+  const handleAccountUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    const token = localStorage.getItem("token");
+    if (!token || !user) {
+      toast.error("You are not authenticated!");
+      return;
+    }
+
+  
+    try {
+      console.log("Sending update with data:", {
+        userId: user.id,
+        data: {
+          first_name: editFirstName,
+          last_name: editLastName,
+          email: editEmail,
+          password: editPassword,
+          updated_by: user.id,
+        }
+      });
+      const response = await updateAccount({
+        userId: user.id,
+        data: {
+          first_name: editFirstName,
+          last_name: editLastName,
+          email: editEmail,
+          password: editPassword,
+          updated_by: user.id,
+        },
+      });
+  
+      if (response.success) {
+        toast.success(response.message || "Account updated successfully!");
+        
+        setUser({
+          ...user,
+          first_name: editFirstName,
+          last_name: editLastName,
+          email: editEmail,
+        });
+      } else {
+        toast.error(response.message || "Update failed!");
+      }
+    } catch (error) {
+      console.error("Update error:", error);
+      toast.error("Something went wrong while updating.");
+    }
+  };
+
   // Load saved theme from localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -90,6 +159,15 @@ const Dashboard: React.FC = () => {
       }
     }
   }, []);
+
+//update user details
+  useEffect(() => {
+    if (user) {
+      setEditFirstName(user.first_name);
+      setEditLastName(user.last_name);
+      setEditEmail(user.email || "");
+    }
+  }, [user]);
 
   // Fetch user details
   useEffect(() => {
@@ -234,6 +312,44 @@ const Dashboard: React.FC = () => {
                   <h1 className="text-2xl font-bold mb-4">Edit Account</h1>
                   <p>Update your account information here.</p>
                   {/* Form fields to edit account would go here */}
+                  <form className="space-y-4" onSubmit={handleAccountUpdate}>
+                    <div>
+                      <label className="text-[14px]">First Name</label>
+                      <input 
+                      type="text" 
+                      value={editFirstName}
+                      onChange={(e) => setEditFirstName(e.target.value)}
+                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                    </div>
+                    <div>
+                      <label className="text-[14px]">Last Name</label>
+                      <input 
+                      type="text" 
+                      value={editLastName}
+                      onChange={(e) => setEditLastName(e.target.value)}
+                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                    </div>
+                    <div>
+                      <label className="text-[14px]">Email</label>
+                      <input 
+                      type="email" 
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                    </div>
+                    <div>
+                      <label className="text-[14px]">Password</label>
+                      <input 
+                      type="password" 
+                      value={editPassword} 
+                      onChange={(e) => setEditPassword(e.target.value)}
+                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                    </div>
+                    <Button 
+                    type="submit"
+                    className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600"
+                    >Save Changes</Button>
+                  </form>
                 </div>
               )}
               
