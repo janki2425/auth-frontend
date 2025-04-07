@@ -37,6 +37,7 @@ interface SidebarContentProps {
 
 interface UserType {
   first_name: string;
+  last_name: string;
   email?: string;
 }
 
@@ -194,22 +195,38 @@ const Dashboard: React.FC = () => {
               )}
               
               {currentPage === "viewProfile" && (
-                <div>
-                  <h1 className="text-2xl font-bold mb-4">User Profile</h1>
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-lg font-semibold">Name</h2>
-                      <p>{user.first_name}</p>
-                    </div>
-                    {user.email && (
-                      <div>
-                        <h2 className="text-lg font-semibold">Email</h2>
-                        <p>{user.email}</p>
-                      </div>
-                    )}
-                    {/* You can display other user details here */}
+                <div className="max-w-md mx-auto mt-16 p-8 rounded-2xl shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                {/* Avatar or Initials */}
+                <div className="flex justify-center mb-6">
+                  <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl font-bold text-gray-700 dark:text-white">
+                    {user.first_name?.[0]}{user.last_name?.[0]}
                   </div>
                 </div>
+              
+                {/* Title */}
+                <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+                  Profile
+                </h1>
+              
+                {/* Info Section */}
+                <div className="space-y-5 text-gray-700 dark:text-gray-200">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Username:</span>
+                    <span>{user.first_name} {user.last_name}</span>
+                  </div>
+              
+                  {user.email && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Email:</span>
+                      <span>{user.email}</span>
+                    </div>
+                  )}
+              
+                  {/* Add more fields here */}
+                </div>
+              </div>
+              
+              
               )}
               
               {currentPage === "account" && (
