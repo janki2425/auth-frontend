@@ -1,4 +1,4 @@
-export const BACKEND_URL = "https://91af-122-170-151-81.ngrok-free.app";
+export const BACKEND_URL = "https://be47-122-170-151-81.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;
@@ -119,3 +119,4 @@ export const updateAccount = async({
     return { success: false, message: "Network error occurred" };
   }
 }
+

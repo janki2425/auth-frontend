@@ -1,110 +1,69 @@
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { loginUser } from "@/pages/api/auth";
-import { GoogleLogin } from "@react-oauth/google";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { BACKEND_URL } from "@/pages/api/auth"; 
+import { signIn } from "next-auth/react";
 
 export default function login(){
     const [form , setForm] = useState({email:"",password:""});
     const [error , setError] = useState("");
     const router = useRouter();
 
+    useEffect(() => {
+      const errorParam = router.query.error;
+      if (errorParam) {
+          setError(Array.isArray(errorParam) ? errorParam[0] : errorParam);
+          toast.error("Authentication failed. Please try again.");
+      }
+  }, [router.query]);
+
 
     const handleSubmit = async(e: React.FormEvent) =>{
         e.preventDefault();
         setError("");
         
-
+        console.log("📤 Submitting login form with data:", form);
         try{
             const response = await loginUser(form);
+            console.log("✅ Login response received:", response);
 
             if (response.token) {
-                toast.success("Login successful!");
                 localStorage.setItem("token", response.token);
+                toast.success("Login successful!");
                 router.push("/auth/dashboard");
             } else {
                 toast.error("Login failed. Please try again.");
                 setError(response.error || "Invalid credentials");
+                console.log("❌ Login error:", response.error);
                 }
         }
         catch(error){
-            setError("Invalid User")
+            setError("Invalid User");
+            console.error("🔥 Exception during login:", error);
         }
     }
 
-    // const handleLoginSuccess = async(credentialResponse: any) => {
-    //     const token = credentialResponse.credential;
-
-    //     try{
-    //         const res = await fetch(`${BACKEND_URL}/api/auth/google`,{
-    //             method:'POST',
-    //             headers:{'Content-Type':'application/json'},
-    //             body: JSON.stringify({ token }),
-    //         })
-
-    //         const data = await res.json();
-
-    //         if(data.ok){
-    //             toast.success("Google Login successful!");
-    //             localStorage.setItem('token', data.token);
-    //             route.push("/auth/dashboard");
-    //         }
-    //         else {
-    //             toast.error("Google Login failed");
-    //             setError(data.message || "Something went wrong");
-    //           }
-    //     }
-    //     catch (err) {
-    //         console.error("Google login error:", err);
-    //         toast.error("An error occurred with Google login");
-    //       }
-    // }
-
-    const handleGoogleSuccess = async (credentialResponse: any) => {
-        const token = credentialResponse.credential;
-    
-        try {
-          const res = await fetch(`${BACKEND_URL}/api/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json","ngrok-skip-browser-warning": "true" },
-            body: JSON.stringify({ token }),
+    const handleGoogleSignIn = async () => {
+      setError("");
+      
+      try {
+          const result = await signIn("google", { 
+              callbackUrl: "/auth/dashboard",
+              redirect: true
           });
-
-        const text = await res.text();
-        console.log("Response status:", res.status);
-        console.log("Raw response:", text);
-        
-        //   const data = await res.json();
-
-        let data;
-        try {
-        data = JSON.parse(text); // Try to parse as JSON
-        } catch (parseError) {
-        throw new Error("Response is not valid JSON: " + text);
-        }
-
           
-    
-          if (res.ok) {
-            toast.success("Google Login successful!");
-            localStorage.setItem("token", data.token);
-            router.push("/auth/dashboard");
-          } else {
-            toast.error("Google Login failed");
-            setError(data.message || "Something went wrong");
+          // Note: we typically won't reach this code since redirect is true
+          if (result?.error) {
+              setError(result.error);
+              toast.error("Google sign-in failed. Please try again.");
           }
-        } catch (err) {
-          console.error("Google login error:", err);
-          toast.error("An error occurred with Google login");
-        }
-      };
-      const handleGoogleFailure = () => {
-        toast.error("Google Login failed");
-        setError("Google authentication failed");
-      };
-
+      } catch (error) {
+          setError("Google authentication failed");
+          console.error("🔥 Exception during Google sign-in:", error);
+      }
+  }
+    
     return(
         <div className="flex items-center justify-center min-h-screen lg:h-dvh w-full bg-black">
             <form onSubmit={handleSubmit} className="flex flex-col bg-black w-[382px] px-6 h-fit py-6 justify-center rounded-[10px] outline-[0.5px]">
@@ -136,12 +95,14 @@ export default function login(){
                 onChange={(e)=>setForm({...form , password:e.target.value})}
                 />
                 <button className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600">Login</button>
-                <div className="mt-3">
-                    <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={handleGoogleFailure}
-                    />
-                </div>
+                <button 
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        className="flex items-center justify-center mt-3 gap-2 py-2 px-3 rounded-[6px] text-black bg-white hover:bg-gray-100 border border-gray-300"
+                    >
+                        <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+                        Sign in with Google
+                    </button>
                 <Link href={"/auth/signup"} className="mt-3 mx-auto">
                 <p className="text-[14px]">Don't have an account ?<span className="text-[14px] border-b-[1px] ml-1 pb-[1px]">Sign up</span></p>
                 </Link> 
