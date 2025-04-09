@@ -1,4 +1,4 @@
-export const BACKEND_URL = "https://be47-122-170-151-81.ngrok-free.app";
+export const BACKEND_URL = "https://1847-122-170-151-81.ngrok-free.app";
 
 interface LoginCredentials {
   email: string;
@@ -23,7 +23,7 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
   try {
     const response = await fetch(`${BACKEND_URL}/api/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json","ngrok-skip-browser-warning": "true" },
       body: JSON.stringify(credentials),
     });
 

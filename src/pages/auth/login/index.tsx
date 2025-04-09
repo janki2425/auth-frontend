@@ -11,12 +11,12 @@ export default function login(){
     const router = useRouter();
 
     useEffect(() => {
-      const errorParam = router.query.error;
-      if (errorParam) {
+        const errorParam = router.query.error;
+        if (errorParam) {
           setError(Array.isArray(errorParam) ? errorParam[0] : errorParam);
           toast.error("Authentication failed. Please try again.");
-      }
-  }, [router.query]);
+        }
+      }, [router.query]);
 
 
     const handleSubmit = async(e: React.FormEvent) =>{
@@ -26,7 +26,6 @@ export default function login(){
         console.log("📤 Submitting login form with data:", form);
         try{
             const response = await loginUser(form);
-            console.log("✅ Login response received:", response);
 
             if (response.token) {
                 localStorage.setItem("token", response.token);
@@ -35,12 +34,10 @@ export default function login(){
             } else {
                 toast.error("Login failed. Please try again.");
                 setError(response.error || "Invalid credentials");
-                console.log("❌ Login error:", response.error);
                 }
         }
         catch(error){
             setError("Invalid User");
-            console.error("🔥 Exception during login:", error);
         }
     }
 
@@ -48,12 +45,7 @@ export default function login(){
       setError("");
       
       try {
-          const result = await signIn("google", { 
-              callbackUrl: "/auth/dashboard",
-              redirect: true
-          });
-          
-          // Note: we typically won't reach this code since redirect is true
+          const result = await signIn("google", { callbackUrl: "/auth/dashboard", redirect: true });
           if (result?.error) {
               setError(result.error);
               toast.error("Google sign-in failed. Please try again.");

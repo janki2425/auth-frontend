@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Moon, Sun, Home, Settings, User, ChevronDown, Menu, LogOut } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { useSession, getSession,signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 import {
   Sheet,
@@ -65,14 +65,12 @@ const Dashboard: React.FC = () => {
 
     if (token && typeof token === "string") {
       localStorage.setItem("token", token);
-      // Clean up URL (remove token query param)
       router.replace("/auth/dashboard");
     }
   }, [router]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token && status === "unauthenticated") {
+    if (status === "unauthenticated" && !localStorage.getItem("token")) {
       router.push("/auth/login");
     }
   }, [status, router]);
@@ -182,62 +180,66 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
-  // Fetch user details
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const fetchUserDetails = async () => {
-      if (session && session.user) {
-        // User is authenticated with Google via NextAuth
-        setUser({
-          id: session.user.id || "google-user",
-          first_name: session.user.name?.split(' ')[0] || "Google",
-          last_name: session.user.name?.split(' ')[1] || "User",
-          email: session.user.email || "",
-          password: "" // Password isn't relevant for Google auth
-        });
-        setLoading(false);
-        return;
+      setLoading(true);
+      setError(null);
+  
+      if (status === "loading") {
+        return; // Wait for session to load
       }
   
-
-
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        console.error("Token is missing! Redirecting to login...");
-        setLoading(false);
-        router.push("/auth/login");
-        return;
-      }
-
-      try {
-        const response = await axios.get(`${BACKEND_URL}/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true"
-          },
+      if (session && session.user) {
+        // Handle Google OAuth login
+        setUser({
+          id: session.user.id || "google-user",
+          first_name: session.user.name?.split(" ")[0] || "Google",
+          last_name: session.user.name?.split(" ")[1] || "User",
+          email: session.user.email || "",
+          password: "",
         });
-
-        if (response.data.user) {
-          setUser(response.data.user);
+        console.log("Set user from Google session:", session.user);
+      } else {
+        // Handle direct login (backend API) if no valid session
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            const response = await axios.get(`${BACKEND_URL}/api/user`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true",
+              },
+            });
+            if (response.data.user) {
+              setUser(response.data.user);
+              console.log("Set user from backend API:", response.data.user);
+            } else {
+              setError("Invalid API response format.");
+            }
+          } catch (err) {
+            setError("Failed to fetch user details from backend.");
+            console.error("Backend fetch error:", err);
+          }
         } else {
-          setError("Invalid API response format.");
+          setError("No authentication found.");
+          console.log("No session or token found.");
         }
-      } catch (err) {
-        setError("Failed to fetch user details.");
-      } finally {
-        setLoading(false);
       }
+  
+      setLoading(false);
     };
-
+  
     fetchUserDetails();
-  }, [router]);
+  }, [session, status]);
+
 
   if (loading) return <p className="p-8">Loading...</p>;
   if (error) return <p className="p-8 text-red-500">{error}</p>;
   if (!user) return <p className="p-8">No user data available.</p>;
+  if (!user && status === "unauthenticated" && !localStorage.getItem("token")) return <p className="p-8">Please sign in.</p>;
+
+  if (status === "loading") return <div>Loading...</div>;
 
   return (
     <div className={`min-h-screen flex ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-slate-900"}`}>
@@ -300,167 +302,110 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
               
-              {/* {currentPage === "viewProfile" && (
-                <div className="max-w-md mx-auto mt-16 p-8 rounded-2xl shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                <div className="flex justify-center mb-6">
-                  <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl font-bold text-gray-700 dark:text-white">
-                    {user.first_name?.[0]}{user.last_name?.[0]}
-                  </div>
-                </div>
-              
-               
-                <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
-                  Profile
-                </h1>
-              
-                
-                <div className="space-y-5 text-gray-700 dark:text-gray-200">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">Username:</span>
-                    <span>{user.first_name} {user.last_name}</span>
-                  </div>
-              
-                  {user.email && (
-                    <div className="flex justify-between">
-                      <span className="font-semibold">Email:</span>
-                      <span>{user.email}</span>
-                    </div>
-                  )}
-              
-                  
-                </div>
-              </div>
-              )}
-               */}
                {currentPage === "viewProfile" && (
-  <div className="max-w-md mx-auto mt-16 p-8 rounded-2xl shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-    {/* Avatar or Initials */}
-    <div className="flex justify-center mb-6">
-      {session?.user?.image ? (
-        <img 
-          src={session.user.image}
-          alt="Profile"
-          className="w-20 h-20 rounded-full"
-        />
-      ) : (
-        <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl font-bold text-gray-700 dark:text-white">
-          {user.first_name?.[0]}{user.last_name?.[0]}
-        </div>
-      )}
-    </div>
+                <div className="max-w-md mx-auto mt-16 p-8 rounded-2xl shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  {/* Avatar or Initials */}
+                  <div className="flex justify-center mb-6">
+                    {session?.user?.image ? (
+                      <img 
+                        src={session.user.image}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl font-bold text-gray-700 dark:text-white">
+                        {user.first_name?.[0]}{user.last_name?.[0]}
+                      </div>
+                    )}
+                  </div>
     
-    {/* Title */}
-    <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
-      Profile
-    </h1>
-    
-    {/* Info Section */}
-    <div className="space-y-5 text-gray-700 dark:text-gray-200">
-      <div className="flex justify-between">
-        <span className="font-semibold">Username:</span>
-        <span>{user.first_name} {user.last_name}</span>
-      </div>
+                  {/* Title */}
+                  <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+                    Profile
+                  </h1>
+                  
+                  {/* Info Section */}
+                  <div className="space-y-5 text-gray-700 dark:text-gray-200">
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Username:</span>
+                      <span>{user.first_name} {user.last_name}</span>
+                    </div>
+                    
+                    {user.email && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Email:</span>
+                        <span>{user.email}</span>
+                      </div>
+                    )}
       
-      {user.email && (
-        <div className="flex justify-between">
-          <span className="font-semibold">Email:</span>
-          <span>{user.email}</span>
-        </div>
-      )}
-      
-      {session && (
-        <div className="flex justify-between">
-          <span className="font-semibold">Login Method:</span>
-          <span className="flex items-center">
-            Google
-            <img src="/google-icon.svg" alt="Google" className="w-4 h-4 ml-2" />
-          </span>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                    {session && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Login Method:</span>
+                        <span className="flex items-center">
+                          Google
+                          <img src="/google-icon.svg" alt="Google" className="w-4 h-4 ml-2" />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-
-              {/* {currentPage === "account" && (
+              {currentPage === "account" && (
                 <div>
                   <h1 className="text-2xl font-bold mb-4">Edit Account</h1>
                   <p>Update your account information here.</p>
-                  <form className="space-y-4" onSubmit={handleAccountUpdate}>
-                    <div>
-                      <label className="text-[14px]">First Name</label>
-                      <input 
-                      type="text" 
-                      value={editFirstName}
-                      onChange={(e) => setEditFirstName(e.target.value)}
-                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                  
+                  {session ? (
+                    <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
+                      <p>You're signed in with Google. Account details are managed through your Google account.</p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+                        <span>{session.user?.email}</span>
+                      </div>
                     </div>
-                    <div>
+                  ) : (
+                    <form className="space-y-4" onSubmit={handleAccountUpdate}>
+                      <div>
+                        <label className="text-[14px]">First Name</label>
+                        <input 
+                        type="text" 
+                        value={editFirstName}
+                        onChange={(e) => setEditFirstName(e.target.value)}
+                        className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                      </div>
+                      <div>
                       <label className="text-[14px]">Last Name</label>
                       <input 
                       type="text" 
                       value={editLastName}
                       onChange={(e) => setEditLastName(e.target.value)}
                       className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
-                    </div>
-                    <div>
-                      <label className="text-[14px]">Email</label>
-                      <input 
-                      type="email" 
-                      value={editEmail}
-                      onChange={(e) => setEditEmail(e.target.value)}
-                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
-                    </div>
-                    <div>
-                      <label className="text-[14px]">Password</label>
-                      <input 
-                      type="password" 
-                      value={editPassword} 
-                      onChange={(e) => setEditPassword(e.target.value)}
-                      className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
-                    </div>
-                    <Button 
-                    type="submit"
-                    className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600"
-                    >Save Changes</Button>
-                  </form>
+                      </div>
+                      <div>
+                        <label className="text-[14px]">Email</label>
+                        <input 
+                        type="email" 
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                      </div>
+                      <div>
+                        <label className="text-[14px]">Password</label>
+                        <input 
+                        type="password" 
+                        value={editPassword} 
+                        onChange={(e) => setEditPassword(e.target.value)}
+                        className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
+                      </div>
+                      <Button 
+                      type="submit"
+                      className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600"
+                      >Save Changes</Button>
+                    </form>
+                  )}
                 </div>
-              )} */}
-
-{currentPage === "account" && (
-  <div>
-    <h1 className="text-2xl font-bold mb-4">Edit Account</h1>
-    <p>Update your account information here.</p>
-    
-    {session ? (
-      <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
-        <p>You're signed in with Google. Account details are managed through your Google account.</p>
-        <div className="mt-4 flex items-center gap-2">
-          <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
-          <span>{session.user?.email}</span>
-        </div>
-      </div>
-    ) : (
-      <form className="space-y-4" onSubmit={handleAccountUpdate}>
-        <div>
-          <label className="text-[14px]">First Name</label>
-          <input 
-          type="text" 
-          value={editFirstName}
-          onChange={(e) => setEditFirstName(e.target.value)}
-          className="outline-[0.5px] px-3 py-1.5 mt-1 mb-7 lg:mb-6 xl:mb-8 2xl:mb-12 w-full text-[16px] rounded-[5px]" />
-        </div>
-        {/* Rest of the form remains unchanged */}
-        <Button 
-        type="submit"
-        className="py-2 px-3 xl:py-2 xl:px-5 2xl:py-3 2xl:px-8 text-[14px] font-[500] tracking-[0.5px] rounded-[6px] text-black bg-slate-200 hover:bg-slate-600"
-        >Save Changes</Button>
-      </form>
-    )}
-  </div>
-)}
-
-              
+              )}
               {currentPage === "settings" && (
                 <div>
                   <h1 className="text-2xl font-bold mb-4">Settings</h1>
@@ -555,7 +500,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         <Button
           variant="ghost"
           className={`w-full ${isCollapsed ? "justify-center" : "justify-start"} text-red-500`}
-          onClick={handleLogout}
+          onClick={() => signOut({ callbackUrl: "/auth/login" })}
         >
           <LogOut className={isCollapsed ? "" : "mr-2"} size={isCollapsed ? 20 : 16} />
           {!isCollapsed && <span>Logout</span>}
