@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 export default function Home() {
   const route=useRouter();
   
-  useEffect(() => {
-    route.push("/auth/login"); // Redirect to login page
-  }, []);
+  // useEffect(() => {
+  //   route.push("/auth/login"); // Redirect to login page
+  // }, []);
 
   return null;
 }
